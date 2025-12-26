@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuminaLib | Premium Digital Library</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.12);
+            --primary: #818cf8;
+            --accent: #c084fc;
+            --bg-deep: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a, #020617);
+            color: #f1f5f9;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Header & Navigation --- */
+        header {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 1100px; padding: 15px 30px;
+            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 100px;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
+        }
+
+        .logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--primary); letter-spacing: -1px; }
+
+        nav ul { display: flex; list-style: none; gap: 10px; }
+        nav ul li a {
+            text-decoration: none; color: #94a3b8; font-size: 0.85rem; padding: 10px 20px;
+            border-radius: 50px; transition: 0.4s; font-weight: 500;
+        }
+        nav ul li a:hover, nav ul li a.active { background: var(--glass); color: var(--primary); border: 1px solid var(--border); }
+
+        /* --- Main Content Container --- */
+        main { padding: 120px 20px 60px; max-width: 1200px; margin: 0 auto; }
+        
+        section { display: none; animation: slideUp 0.8s cubic-bezier(0.19, 1, 0.22, 1); }
+        section.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); filter: blur(10px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+
+        h1 { font-family: 'Space Grotesk', sans-serif; font-size: 3rem; text-align: center; margin-bottom: 40px; background: linear-gradient(to right, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* --- Glass Cards & Layouts --- */
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(16px);
+            border: 1px solid var(--border); border-radius: 30px;
+            padding: 40px; margin-bottom: 30px;
+        }
+
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+        /* --- Book Items --- */
+        .book-card {
+            background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid var(--border);
+            overflow: hidden; transition: 0.4s; position: relative;
+        }
+        .book-card:hover { transform: translateY(-10px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .book-card img { width: 100%; height: 200px; object-fit: cover; filter: grayscale(20%); }
+        .book-info { padding: 20px; }
+        .status-tag { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
+        .available { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+        .unavailable { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+        /* --- Form Styling --- */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #94a3b8; }
+        input, select, textarea {
+            width: 100%; padding: 15px; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 12px; color: #fff; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); background: rgba(255,255,255,0.08); }
+
+        .btn-main {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: #020617; border: none; padding: 15px 40px; border-radius: 50px;
+            font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%;
+        }
+        .btn-main:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(129, 140, 248, 0.3); }
+
+        /* --- Result Overlay --- */
+        #borrowResult {
+            display: none; margin-top: 30px; border: 2px solid var(--primary); background: rgba(129, 140, 248, 0.1);
+        }
+
+        .receipt-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+
+        footer { text-align: center; padding: 40px; color: #64748b; font-size: 0.8rem; }
+
+        @media(max-width: 768px) {
+            header { flex-direction: column; border-radius: 20px; width: 95%; }
+            nav ul { margin-top: 15px; flex-wrap: wrap; justify-content: center; }
+            h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo"><i class="fa-solid fa-book-quran"></i> LUMINALIB</div>
+    <nav>
+        <ul>
+            <li><a href="#" onclick="showPage('home')" id="l-home" class="active">Discover</a></li>
+            <li><a href="#" onclick="showPage('books')" id="l-books">Gallery</a></li>
+            <li><a href="#" onclick="showPage('borrow')" id="l-borrow">Borrow System</a></li>
+            <li><a href="#" onclick="showPage('member')" id="l-member">Membership</a></li>
+            <li><a href="#" onclick="showPage('contact')" id="l-contact">Support</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <section id="home" class="active">
+        <h1>Future of Reading</h1>
+        <div class="glass-card grid-3">
+            <div>
+                <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=800&q=80" style="width:100%; border-radius:20px; margin-bottom:20px;" alt="Library Interior">
+                <h3>Global Collection</h3>
+                <p style="color:#94a3b8; margin-top:10px;">Access over 500,000 digital titles and rare manuscripts from anywhere in the world.</p>
+            </div>
+            <div style="background:rgba(129, 140, 248, 0.1); border-radius:20px; padding:20px;">
+                <h2 style="color:var(--primary)">Live Stats</h2>
+                <div class="receipt-row"><span>Books Issued Today</span> <strong>1,420</strong></div>
+                <div class="receipt-row"><span>New Members</span> <strong>85</strong></div>
+                <div class="receipt-row"><span>Active Readers</span> <strong>12,000+</strong></div>
+                <button class="btn-main" style="margin-top:20px;" onclick="showPage('books')">Browse Now</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="books">
+        <h1>Curated Collection</h1>
+        <div class="grid-3">
+            <div class="book-card">
+                <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=500&q=80">
+                <div class="book-info">
+                    <span class="status-tag available">In Stock</span>
+                    <h3>The Cyber Frontier</h3>
+                    <p style="font-size:0.8rem; color:#94a3b8">ISBN: #9901 | Price: $12.00</p>
+                </div>
+            </div>
+            <div class="book-card">
+                <img src="https://images.unsplash.com/photo-1589998059171-988d887df646?auto=format&fit=crop&w=500&q=80">
+                <div class="book-info">
+                    <span class="status-tag unavailable">Borrowed</span>
+                    <h3>Eternal Echoes</h3>
+                    <p style="font-size:0.8rem; color:#94a3b8">ISBN: #8842 | Price: $15.50</p>
+                </div>
+            </div>
+            <div class="book-card">
+                <img src="https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=500&q=80">
+                <div class="book-info">
+                    <span class="status-tag available">In Stock</span>
+                    <h3>Ancient Alchemy</h3>
+                    <p style="font-size:0.8rem; color:#94a3b8">ISBN: #7721 | Price: $18.00</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="borrow">
+        <h1>Book Issuing Desk</h1>
+        <div class="glass-card" style="max-width:600px; margin: 0 auto;">
+            <form id="borrowForm" onsubmit="handleBorrow(event)">
+                <div class="form-group">
+                    <label>Borrower Full Name</label>
+                    <input type="text" id="bName" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label>Select Book Category</label>
+                    <select id="bBook">
+                        <option value="Cyber Frontier|$12.00">The Cyber Frontier ($12.00)</option>
+                        <option value="Eternal Echoes|$15.50">Eternal Echoes ($15.50)</option>
+                        <option value="Ancient Alchemy|$18.00">Ancient Alchemy ($18.00)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Duration (Days)</label>
+                    <input type="number" id="bDays" min="1" max="30" value="7">
+                </div>
+                <button type="submit" class="btn-main">PROCESS ISSUANCE</button>
+            </form>
+
+            <div id="borrowResult" class="glass-card">
+                <h3 style="color:var(--primary); margin-bottom:15px;"><i class="fa-solid fa-circle-check"></i> Issuance Successful</h3>
+                <div class="receipt-row"><span>Issued To:</span> <strong id="resName"></strong></div>
+                <div class="receipt-row"><span>Book Title:</span> <strong id="resBook"></strong></div>
+                <div class="receipt-row"><span>Daily Rent:</span> <strong id="resPrice"></strong></div>
+                <div class="receipt-row"><span>Return Date:</span> <strong id="resDate"></strong></div>
+                <div class="receipt-row"><span>Library Status:</span> <strong style="color:#4ade80">OUT OF STOCK</strong></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="member">
+        <h1>Premium Membership</h1>
+        <div class="grid-3">
+            <div class="glass-card" style="text-align:center;">
+                <h2 style="color:var(--accent)">Basic Reader</h2>
+                <h1 style="font-size:2rem; margin:20px 0;">Free</h1>
+                <ul style="list-style:none; color:#94a3b8; line-height:2;">
+                    <li>2 Books at a time</li>
+                    <li>7 Days Borrow Limit</li>
+                    <li>Digital Access Only</li>
+                </ul>
+                <button class="btn-main" style="margin-top:20px; background:transparent; border:1px solid var(--border); color:#fff;">Join Now</button>
+            </div>
+            <div class="glass-card" style="text-align:center; border-color:var(--primary); transform:scale(1.05);">
+                <span class="status-tag available">Recommended</span>
+                <h2 style="color:var(--primary)">Elite Scholar</h2>
+                <h1 style="font-size:2rem; margin:20px 0;">$19.99/mo</h1>
+                <ul style="list-style:none; color:#f1f5f9; line-height:2;">
+                    <li>Unlimited Books</li>
+                    <li>30 Days Borrow Limit</li>
+                    <li>Home Delivery Included</li>
+                </ul>
+                <button class="btn-main" style="margin-top:20px;">Upgrade Now</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact">
+        <h1>Get in Touch</h1>
+        <div class="glass-card grid-3">
+            <div>
+                <h3>Contact Information</h3>
+                <p style="margin:20px 0; color:#94a3b8;"><i class="fa-solid fa-location-dot"></i> 452 Library Avenue, Digital City, DC 001</p>
+                <p style="margin:20px 0; color:#94a3b8;"><i class="fa-solid fa-phone"></i> +1 (555) 900-1234</p>
+                <p style="margin:20px 0; color:#94a3b8;"><i class="fa-solid fa-envelope"></i> support@luminalib.com</p>
+            </div>
+            <form onsubmit="alert('Support Ticket Created!'); return false;">
+                <div class="form-group"><input type="text" placeholder="Your Name"></div>
+                <div class="form-group"><input type="email" placeholder="Email Address"></div>
+                <div class="form-group"><textarea rows="4" placeholder="How can we help you?"></textarea></div>
+                <button class="btn-main">SEND MESSAGE</button>
+            </form>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>&copy; 2025 LUMINALIB &bull; DESIGNED FOR THE MODERN READER</p>
+</footer>
+
+<script>
+    // Navigation Control
+    function showPage(pageId) {
+        document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('nav ul li a').forEach(a => a.classList.remove('active'));
+        
+        document.getElementById(pageId).classList.add('active');
+        document.getElementById('l-' + pageId).classList.add('active');
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Borrow Form Processing
+    function handleBorrow(event) {
+        event.preventDefault();
+        
+        const name = document.getElementById('bName').value;
+        const bookData = document.getElementById('bBook').value.split('|');
+        const days = document.getElementById('bDays').value;
+        
+        // Calculate Return Date
+        const today = new Date();
+        const returnDate = new Date();
+        returnDate.setDate(today.getDate() + parseInt(days));
+
+        // Display Results
+        document.getElementById('resName').innerText = name;
+        document.getElementById('resBook').innerText = bookData[0];
+        document.getElementById('resPrice').innerText = bookData[1];
+        document.getElementById('resDate').innerText = returnDate.toLocaleDateString();
+
+        const resultBox = document.getElementById('borrowResult');
+        resultBox.style.display = 'block';
+        resultBox.scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>]
